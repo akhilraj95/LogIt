@@ -2,6 +2,7 @@ package com.achilles.akhilraj.logit;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -19,12 +20,15 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,6 +45,9 @@ import java.util.Date;
 public class IndivLog extends AppCompatActivity {
 
     public int VIDEOPERIOD=5;
+
+    //audio
+    String array_spinner[] = {"test1","test2","test3","test4"};
 
     private Uri fileUri;
     private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
@@ -98,14 +105,13 @@ public class IndivLog extends AppCompatActivity {
                 AlertDialog.Builder dialogbuilder = new AlertDialog.Builder(IndivLog.this);
                 dialogbuilder.setTitle("Merge the videos ?")
                                 .setMessage("Merged videos are available under completed tab")
-
                                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
                                         mergelog ml = new mergelog(IndivLog.this);
                                         ml.concatvideos(IndivLog.this.id, log_name);
                                         Toast.makeText(IndivLog.this, "Videos Merged Successfully", Toast.LENGTH_SHORT).show();
 
-                                        Intent returnintent = new Intent(IndivLog.this,MainActivity.class);
+                                        Intent returnintent = new Intent(IndivLog.this, MainActivity.class);
                                         startActivity(returnintent);
                                     }
                                 })

@@ -54,9 +54,19 @@ public class SecondFragment extends Fragment {
                 final File temp = new File(cursor.getString(cursor.getColumnIndex(DBHelper.COMPLETEDVID_DIR)));
                 final Uri newVideoPath = Uri.fromFile(temp);
                 final String tempid = cursor.getString(cursor.getColumnIndex(DBHelper.COMPLETEDVID_ID));
+                final String name = cursor.getString(cursor.getColumnIndex(DBHelper.COMPLETEDVID_NAME));
 
                 AlertDialog.Builder dialogbuilder = new AlertDialog.Builder(getContext());
                 dialogbuilder.setTitle("Choose Action")
+                        .setNeutralButton("Add Music", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent addmusicintent = new Intent(getContext(),AddMusic.class);
+                                addmusicintent.putExtra("file",temp);
+                                addmusicintent.putExtra("name",name);
+                                startActivity(addmusicintent);
+                            }
+                        })
                         .setPositiveButton("Share", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 Intent sharingIntent = new Intent(Intent.ACTION_SEND);
@@ -69,10 +79,9 @@ public class SecondFragment extends Fragment {
                             public void onClick(DialogInterface dialog, int id) {
                                 mydb.deletenewcompletedvideo(tempid);
                                 boolean deleted = temp.delete();
-                                if(deleted)
-                                {
+                                if (deleted) {
                                     Toast.makeText(getContext(), "Video deleted", Toast.LENGTH_SHORT).show();
-                                    Intent tempintent = new Intent(getContext(),MainActivity.class);
+                                    Intent tempintent = new Intent(getContext(), MainActivity.class);
                                     startActivity(tempintent);
                                 }
 
