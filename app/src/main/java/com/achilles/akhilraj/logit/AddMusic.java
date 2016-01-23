@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.database.Cursor;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,8 +16,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.coremedia.iso.IsoFile;
@@ -35,7 +40,11 @@ import com.mpatric.mp3agic.NotSupportedException;
 import com.mpatric.mp3agic.UnsupportedTagException;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.URI;
 import java.nio.channels.FileChannel;
@@ -48,7 +57,13 @@ public class AddMusic extends AppCompatActivity {
 
     static final int REQ_CODE_PICK_SOUNDFILE = 707;
     Uri audioFileUri;
+    String realpathtomusic;
     private DBHelper mydb ;
+    TextView musicname;
+
+
+        String appmusic[] = {"cool","energy","focus","groovy","happy","inspiration","idea"};
+        String appdir[] = {"cool.mp3","energy.mp3","focus.mp3","groovy.mp3","happy.mp3","inspiration.mp3","littleidea.mp3"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,7 +100,78 @@ public class AddMusic extends AppCompatActivity {
             }
         });
 
-        final CheckBox checkbox = (CheckBox) findViewById(R.id.checkBoxcustommusicaddmusic);
+
+        //appmusic list view
+         musicname = (TextView) findViewById(R.id.textViewmusicname);
+        ListView appmusiclist = (ListView) findViewById(R.id.listViewmusic);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, appmusic);
+        appmusiclist.setAdapter(adapter);
+
+        appmusiclist.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                try {
+                    String tdir = Environment.getExternalStorageDirectory() + "/Logit/music-cache/"+appdir[position];
+                    InputStream is = getAssets().open(appdir[position]);
+                    File tranfermusic = new File(tdir);
+                    if (!tranfermusic.exists()) {
+                        File t = new File(Environment.getExternalStorageDirectory() + "/Logit/music-cache/");
+                        if (!t.exists()) {
+                            t.mkdir();
+                        }
+                        tranfermusic.createNewFile();
+
+                        OutputStream out = new FileOutputStream(tranfermusic);
+                        copyFile(is, out);
+                    }
+
+
+                    audioFileUri = Uri.parse(tdir);
+                    realpathtomusic = audioFileUri.getPath();
+                    musicname.setText(appmusic[position]);
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        appmusiclist.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+
+                try {
+                    InputStream is = getAssets().open(appdir[position]);
+                    String tdir = Environment.getExternalStorageDirectory() + "/Logit/music-cache/"+appdir[position];
+                    File tranfermusic = new File(tdir);
+                    if(!tranfermusic.exists())
+                    {
+                        File t = new File(Environment.getExternalStorageDirectory() + "/Logit/music-cache/");
+                        if(!t.exists())
+                        {
+                            t.mkdir();
+                        }
+                        tranfermusic.createNewFile();
+                        OutputStream out = new FileOutputStream(tranfermusic);
+                        copyFile(is,out);
+                    }
+                    Uri uritemp  = Uri.parse(tdir);
+                   // realpathtomusic = audioFileUri.getPath();
+                    Intent intent = new Intent(Intent.ACTION_VIEW, uritemp);
+                    intent.setDataAndType( Uri.parse("file:///"+Environment.getExternalStorageDirectory() + "/Logit/music-cache/"+appdir[position]), "audio/*");
+                    startActivity(intent);
+
+                    startActivity(intent);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return false;
+            }
+        });
+
 
         Button buttonmerge = (Button) findViewById(R.id.buttonmergeaudioaddmusic);
         buttonmerge.setOnClickListener(new View.OnClickListener() {
@@ -93,8 +179,7 @@ public class AddMusic extends AppCompatActivity {
             public void onClick(View v) {
 
                 //using custommusic
-                    if(checkbox.isChecked())
-                    {
+
                         MovieCreator mc = new MovieCreator();
                         Movie movie = new Movie();
                         try {
@@ -113,7 +198,7 @@ public class AddMusic extends AppCompatActivity {
                                 }
                             Movie result = new Movie();
                                 //removing headers
-                                Mp3File mp3file = new Mp3File(getRealPathFromURI(AddMusic.this,audioFileUri));
+                                Mp3File mp3file = new Mp3File(realpathtomusic);
                                 if (mp3file.hasId3v1Tag()) {
                                     mp3file.removeId3v1Tag();
                                     Log.d("MP3agic","removeId3v1Tag");
@@ -172,8 +257,16 @@ public class AddMusic extends AppCompatActivity {
                             Toast.makeText(AddMusic.this, "Failed", Toast.LENGTH_SHORT).show();
                         }
                     }
-            }
+
         });
+    }
+
+    private void copyFile(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int read;
+        while((read = in.read(buffer)) != -1){
+            out.write(buffer, 0, read);
+        }
     }
 
     public String getRealPathFromURI(Context context, Uri contentUri) {
@@ -196,6 +289,8 @@ public class AddMusic extends AppCompatActivity {
         if (requestCode == REQ_CODE_PICK_SOUNDFILE && resultCode == Activity.RESULT_OK){
             if ((data != null) && (data.getData() != null)){
                 audioFileUri = data.getData();
+                realpathtomusic= getRealPathFromURI(AddMusic.this,audioFileUri);
+                musicname.setText("custom music");
                 Toast.makeText(AddMusic.this, "audio selected", Toast.LENGTH_SHORT).show();
                 // Now you can use that Uri to get the file path, or upload it, ...
             }

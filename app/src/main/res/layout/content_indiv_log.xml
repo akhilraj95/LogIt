@@ -113,8 +113,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:id="@+id/listViewIndivLog"
-            android:layout_marginTop="10dp"
-            android:backgroundTintMode="src_in" />
+            android:layout_marginTop="10dp" />
 
     </LinearLayout>
 

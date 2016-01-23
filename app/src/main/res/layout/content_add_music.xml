@@ -16,22 +16,31 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Add Music"
-            android:id="@+id/textView9" />
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Add Music :"
+                android:id="@+id/textView9" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="no files selected"
+                android:id="@+id/textViewmusicname"
+                android:paddingLeft="10dp" />
+        </LinearLayout>
 
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="51dp"
-                android:id="@+id/checkBoxcustommusicaddmusic" />
+            android:layout_height="wrap_content">
 
             <Button
                 android:layout_width="match_parent"
@@ -42,6 +51,28 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Select from Logit "
+                android:id="@+id/textView6"
+                android:paddingLeft="20dp" />
+
+        </LinearLayout>
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:id="@+id/listViewmusic"
+            android:layout_gravity="center_horizontal" />
+
     </LinearLayout>
 
     <Button
@@ -50,4 +81,5 @@
         android:text="Add Audio to Video"
         android:id="@+id/buttonmergeaudioaddmusic"
         android:layout_alignParentBottom="true" />
+
 </RelativeLayout>
