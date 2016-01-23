@@ -57,7 +57,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public boolean insert(String name,int logtype)
     {
         SQLiteDatabase db = this.getWritableDatabase();
-        String sql = "INSERT INTO videolog("+KEY_NAME+","+KEY_LOGTYPE+","+KEY_TIMESTAMP+") VALUES(?,"+String.valueOf(logtype)+",datetime('NOW'))";
+        String sql = "INSERT INTO videolog("+KEY_NAME+","+KEY_LOGTYPE+","+KEY_TIMESTAMP+") VALUES(?,"+String.valueOf(logtype)+",datetime('NOW','LOCALTIME'))";
         db.execSQL(sql, new String[]{name});
         return true;
     }
@@ -65,7 +65,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public boolean newvideo(String id,String dir,int length)
     {
         SQLiteDatabase db = this.getWritableDatabase();
-        String sql = "INSERT INTO video("+VID_DIR+","+VID_TIMESTAMP+","+VID_LENGTH+","+VID_KEY_ID+","+VID_THUMBNAIL_DIR+") VALUES('"+String.valueOf(dir)+"',datetime('NOW'),'"+String.valueOf(length)+"',"+String.valueOf(id)+",'00')";
+        String sql = "INSERT INTO video("+VID_DIR+","+VID_TIMESTAMP+","+VID_LENGTH+","+VID_KEY_ID+","+VID_THUMBNAIL_DIR+") VALUES('"+String.valueOf(dir)+"',datetime('NOW','LOCALTIME'),'"+String.valueOf(length)+"',"+String.valueOf(id)+",'00')";
         db.execSQL(sql);
         return true;
     }
@@ -73,7 +73,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public boolean newcompletedvideo(String name, String dir)
     {
         SQLiteDatabase db = this.getWritableDatabase();
-        String sql = "INSERT INTO completedvideo("+COMPLETEDVID_NAME+","+COMPLETEDVID_DIR+","+COMPLETEDVID_TIMESTAMP+","+COMPLETEDVID_THUMBNAIL_DIR+") VALUES('"+name+"','"+dir+"',datetime('NOW'),'00')";
+        String sql = "INSERT INTO completedvideo("+COMPLETEDVID_NAME+","+COMPLETEDVID_DIR+","+COMPLETEDVID_TIMESTAMP+","+COMPLETEDVID_THUMBNAIL_DIR+") VALUES('"+name+"','"+dir+"',datetime('NOW','LOCALTIME'),'00')";
         db.execSQL(sql);
         return true;
     }
@@ -89,6 +89,13 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete("video", VID_KEY_ID + "=" + id, null) > 0;
     }
+
+    public  boolean deleteindivlogvideo(String id)
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete("video", VID_ID + "=" + id, null) > 0;
+    }
+
     public boolean deletenewcompletedvideo(String id)
     {
         SQLiteDatabase db = this.getWritableDatabase();

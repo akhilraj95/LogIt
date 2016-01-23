@@ -77,78 +77,11 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-//                Snackbar.make(view, "Welcome", Snackbar.LENGTH_LONG).setAction("Action", null).show();
-                    Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-
-                    fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-                    intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
-                    intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 5);
-                    startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
-                }
-        });
-
-
     }
 
-    private static Uri getOutputMediaFileUri(int type){
-        return Uri.fromFile(getOutputMediaFile(type));
-    }
-    /** Create a File for saving an image or video */
-    private static File getOutputMediaFile(int type){
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
 
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "LogIt");
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
-        // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
-                Log.d("LogIt", "failed to create directory");
-                return null;
-            }
-        }
-
-        // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        File mediaFile;
-        if (type == MEDIA_TYPE_IMAGE){
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_"+ timeStamp + ".jpg");
-        } else if(type == MEDIA_TYPE_VIDEO) {
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "LOGIT_"+ timeStamp + ".3gp");
-        } else {
-            return null;
-        }
-
-        return mediaFile;
-    }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        if (requestCode == CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                // Video captured and saved to fileUri specified in the Intent
-               // Toast.makeText(this, "Video saved to:\n" + data.getData(), Toast.LENGTH_LONG).show();
-                Snackbar.make(coordinatorLayout, "Video saved to:"+data.getData(), Snackbar.LENGTH_LONG).setAction("Action", null).show();
-            } else if (resultCode == RESULT_CANCELED) {
-                Snackbar.make(coordinatorLayout,"Video cancelled",Snackbar.LENGTH_LONG).setAction("Action",null).show();
-            } else {
-                Snackbar.make(coordinatorLayout,"Video Failed",Snackbar.LENGTH_LONG).setAction("Action",null).show();
-
-            }
-        }
 
         if(requestCode==777)
         {

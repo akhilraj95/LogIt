@@ -46,8 +46,7 @@ public class IndivLog extends AppCompatActivity {
 
     public int VIDEOPERIOD=5;
 
-    //audio
-    String array_spinner[] = {"test1","test2","test3","test4"};
+
 
     private Uri fileUri;
     private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
@@ -58,6 +57,7 @@ public class IndivLog extends AppCompatActivity {
     ListView listview;
     String id;
     String log_name;
+    TextView textviewnoofvid,textviewtotaltime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +75,8 @@ public class IndivLog extends AppCompatActivity {
         //setting up the log details
         TextView textview = (TextView) findViewById(R.id.textViewStartTimeIndivLog);
         TextView textView2 = (TextView) findViewById(R.id.textViewStartDateIndivLog);
+        textviewnoofvid = (TextView) findViewById(R.id.textViewNoVidIndivLog);
+        textviewtotaltime = (TextView) findViewById(R.id.textViewTotalTimeIndivLog);
         String temp[] = timestamp.split(" ");
         textview.setText(temp[1]);  //time
         textView2.setText(temp[0]); //date
@@ -89,10 +91,44 @@ public class IndivLog extends AppCompatActivity {
 
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
                 Uri newVideoPath = Uri.parse(cursor.getString(cursor.getColumnIndex(DBHelper.VID_DIR)));
-               //playing the video
+                //playing the video
                 Intent intent = new Intent(Intent.ACTION_VIEW, newVideoPath);
                 intent.setDataAndType(newVideoPath, "video/*");
                 startActivity(intent);
+            }
+        });
+
+        listview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+
+                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+                final String tempid = cursor.getString(cursor.getColumnIndex(DBHelper.VID_ID));
+
+                //delete video
+                AlertDialog.Builder dialogbuilder = new AlertDialog.Builder(IndivLog.this);
+                dialogbuilder.setTitle("Delete Video ?")
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    if(mydb.deleteindivlogvideo(tempid))
+                                        Toast.makeText(IndivLog.this, "deleted", Toast.LENGTH_SHORT).show();
+                                    finish();
+                                    startActivity(getIntent());
+
+                                }
+                            })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                            });
+                AlertDialog alertDialog = dialogbuilder.create();
+                alertDialog.show();
+
+
+                return false;
             }
         });
 
@@ -104,12 +140,12 @@ public class IndivLog extends AppCompatActivity {
 
                 AlertDialog.Builder dialogbuilder = new AlertDialog.Builder(IndivLog.this);
                 dialogbuilder.setTitle("Merge the videos ?")
-                                .setMessage("Merged videos are available under completed tab")
+                                .setMessage("(once merged you can find them in the completed tab)")
                                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
                                         mergelog ml = new mergelog(IndivLog.this);
                                         ml.concatvideos(IndivLog.this.id, log_name);
-                                        Toast.makeText(IndivLog.this, "Videos Merged Successfully", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(IndivLog.this, "Please Wait", Toast.LENGTH_SHORT).show();
 
                                         Intent returnintent = new Intent(IndivLog.this, MainActivity.class);
                                         startActivity(returnintent);
@@ -117,7 +153,7 @@ public class IndivLog extends AppCompatActivity {
                                 })
                                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
-                                        finish();
+
                                     }
                                 });
                 AlertDialog alertDialog = dialogbuilder.create();
@@ -215,6 +251,9 @@ public class IndivLog extends AppCompatActivity {
 
         Cursor cursor = mydb.getVideo(id);
 
+        int Noofvideos=0,Totaltime=0;
+
+
         //mapping the fieldnames
         String[] fromfieldnames = new String[] {DBHelper.VID_TIMESTAMP,DBHelper.VID_DIR,DBHelper.VID_THUMBNAIL_DIR};
         int[] toviewids = new int[] {R.id.textViewtimelistviewindivlog,R.id.imageViewlistviewindivlog,R.id.textViewvideonumberindivlog};
@@ -300,5 +339,21 @@ public class IndivLog extends AppCompatActivity {
             }
         });
         listview.setAdapter(mycursoradapter);
+
+        Totaltime =0;
+        //finding total time
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            Totaltime+= Integer.parseInt(cursor.getString(cursor.getColumnIndex(DBHelper.VID_LENGTH)));
+            cursor.moveToNext();
+        }
+        textviewtotaltime.setText(String.valueOf(Totaltime)+" sec");
+
+        //total no of videos
+        Noofvideos = cursor.getCount();
+        textviewnoofvid.setText(String.valueOf(Noofvideos));
+
+
+
     }
 }
