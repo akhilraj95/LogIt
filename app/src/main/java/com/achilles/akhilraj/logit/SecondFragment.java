@@ -4,16 +4,20 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
+import android.text.TextPaint;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +28,9 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -44,6 +51,7 @@ public class SecondFragment extends Fragment {
         rootView = inflater.inflate(R.layout.fragment_second, container, false);
         listview = (ListView) rootView.findViewById(R.id.listViewsecondfragment);
         mydb = new DBHelper(getContext());
+
 
         populateListView();
 
@@ -83,6 +91,7 @@ public class SecondFragment extends Fragment {
                                     Toast.makeText(getContext(), "Video deleted", Toast.LENGTH_SHORT).show();
                                     Intent tempintent = new Intent(getContext(), MainActivity.class);
                                     startActivity(tempintent);
+                                    getActivity().finish();
                                 }
 
 
@@ -92,7 +101,7 @@ public class SecondFragment extends Fragment {
                 alertDialog.show();
 
 
-                return false;
+                return true;
             }
         });
 
@@ -100,6 +109,29 @@ public class SecondFragment extends Fragment {
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+
+                SharedPreferences setpref = PreferenceManager.getDefaultSharedPreferences(getContext());
+                SharedPreferences.Editor editor = setpref.edit();
+                //showcaseview
+                if(setpref.getBoolean("tutsecondfragment",true))
+                {
+                    AlertDialog.Builder dialogbuilder = new AlertDialog.Builder(getContext());
+                    dialogbuilder.setTitle("Usage Guide")
+                                    .setMessage("Click on Video to play. Long click on video to share, add music and delete")
+                                    .setNeutralButton("Got It", new DialogInterface.OnClickListener() {
+
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+
+                                        }
+                                    });
+
+                    AlertDialog alertDialog = dialogbuilder.create();
+                    alertDialog.show();
+
+                    editor.putBoolean("tutsecondfragment", false).commit();
+                }
 
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
                 File temp = new File(cursor.getString(cursor.getColumnIndex(DBHelper.COMPLETEDVID_DIR)));

@@ -5,20 +5,24 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextPaint;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +36,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
+
 import org.w3c.dom.Text;
 
 import java.io.File;
@@ -39,6 +46,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -58,6 +66,7 @@ public class IndivLog extends AppCompatActivity {
     String id;
     String log_name;
     TextView textviewnoofvid,textviewtotaltime;
+    SharedPreferences setpref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +74,24 @@ public class IndivLog extends AppCompatActivity {
         setContentView(R.layout.activity_indiv_log);
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.indiv_log_content);
         mydb = new DBHelper(this);
+
+        setpref = PreferenceManager.getDefaultSharedPreferences(IndivLog.this);
+        SharedPreferences.Editor editor = setpref.edit();
+        //showcaseview
+        if(setpref.getBoolean("tutfabbtn",true))
+        {
+            new ShowcaseView.Builder(IndivLog.this)
+                    .setTarget(new ViewTarget(findViewById(R.id.buttonfinishlogindivlog)))
+                    .setContentTitle("Click on this to merge the videos")
+                    .setContentText("Click on the floating camera button to take short 5 sec videos. Multiple short videos can be merged to form the final video log")
+                    .build();
+
+            editor.putBoolean("tutfabbtn",false).commit();
+        }
+
+
+
+
 
         //getting the intent extra details
         String name = getIntent().getStringExtra("name");
@@ -128,7 +155,7 @@ public class IndivLog extends AppCompatActivity {
                 alertDialog.show();
 
 
-                return false;
+                return true;
             }
         });
 
@@ -137,27 +164,33 @@ public class IndivLog extends AppCompatActivity {
         finishlog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(Integer.valueOf(textviewnoofvid.getText().toString())>0) {
+                    AlertDialog.Builder dialogbuilder = new AlertDialog.Builder(IndivLog.this);
+                    dialogbuilder.setTitle("Merge the videos ?")
+                            .setMessage("The merged video would be available in the merged tab")
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    mergelog ml = new mergelog(IndivLog.this);
+                                    ml.concatvideos(IndivLog.this.id, log_name);
+                                    Toast.makeText(IndivLog.this, "Please Wait", Toast.LENGTH_SHORT).show();
 
-                AlertDialog.Builder dialogbuilder = new AlertDialog.Builder(IndivLog.this);
-                dialogbuilder.setTitle("Merge the videos ?")
-                                .setMessage("(once merged you can find them in the completed tab)")
-                                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        mergelog ml = new mergelog(IndivLog.this);
-                                        ml.concatvideos(IndivLog.this.id, log_name);
-                                        Toast.makeText(IndivLog.this, "Please Wait", Toast.LENGTH_SHORT).show();
+                                    Intent returnintent = new Intent(IndivLog.this, MainActivity.class);
+                                    startActivity(returnintent);
+                                    finish();
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
 
-                                        Intent returnintent = new Intent(IndivLog.this, MainActivity.class);
-                                        startActivity(returnintent);
-                                    }
-                                })
-                                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-
-                                    }
-                                });
-                AlertDialog alertDialog = dialogbuilder.create();
-                alertDialog.show();
+                                }
+                            });
+                    AlertDialog alertDialog = dialogbuilder.create();
+                    alertDialog.show();
+                }
+                else
+                {
+                    Toast.makeText(IndivLog.this, "Take videos first", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -175,12 +208,16 @@ public class IndivLog extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
+
                 Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                int maxtime = setpref.getInt("maxtime",5);
+                int quality = setpref.getInt("quality",1);
+
 
                 fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-                intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
-                intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, VIDEOPERIOD);
+                intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, quality);
+                intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, maxtime);
                 startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
 
             }
@@ -197,8 +234,7 @@ public class IndivLog extends AppCompatActivity {
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
 
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "LogIt");
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "LogIt");
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
 
@@ -230,10 +266,14 @@ public class IndivLog extends AppCompatActivity {
 
         if (requestCode == CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-
-                mydb.newvideo(id,fileUri.toString(),VIDEOPERIOD);
-                Snackbar.make(coordinatorLayout, "Video saved to:"+fileUri.toString(), Snackbar.LENGTH_LONG).setAction("Action", null).show();
-                populatelistview();
+                try{
+                    mydb.newvideo(id, fileUri.toString(), setpref.getInt("maxtime", 5));
+                    Snackbar.make(coordinatorLayout, "Video saved to:" + fileUri.toString(), Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                    populatelistview();
+                }catch (Exception e)
+                {
+                    Snackbar.make(coordinatorLayout,"Coudlnt Save Video Try Again",Snackbar.LENGTH_LONG).setAction("Action",null).show();
+                }
             } else if (resultCode == RESULT_CANCELED) {
                 Snackbar.make(coordinatorLayout,"Video cancelled",Snackbar.LENGTH_LONG).setAction("Action",null).show();
             } else {
@@ -333,7 +373,11 @@ public class IndivLog extends AppCompatActivity {
                     return true;
                 }
 
-
+                if(view.getId() == R.id.textViewtimelistviewindivlog)
+                {
+                    ((TextView) view).setText(parseDateToddMMyyyy(cursor.getString(cursor.getColumnIndex(DBHelper.VID_TIMESTAMP))));
+                    return true;
+                }
 
                 return false;
             }
@@ -355,5 +399,23 @@ public class IndivLog extends AppCompatActivity {
 
 
 
+    }
+
+    public String parseDateToddMMyyyy(String time) {
+        String inputPattern = "yyyy-MM-dd HH:mm:ss";
+        String outputPattern = "dd MMM  h:mm a";
+        SimpleDateFormat inputFormat = new SimpleDateFormat(inputPattern);
+        SimpleDateFormat outputFormat = new SimpleDateFormat(outputPattern);
+
+        Date date = null;
+        String str = null;
+
+        try {
+            date = inputFormat.parse(time);
+            str = outputFormat.format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return str;
     }
 }

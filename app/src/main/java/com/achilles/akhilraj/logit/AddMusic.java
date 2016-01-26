@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -31,6 +33,7 @@ import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+import com.googlecode.mp4parser.authoring.tracks.AACTrackImpl;
 import com.googlecode.mp4parser.authoring.tracks.AppendTrack;
 import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
 import com.googlecode.mp4parser.authoring.tracks.MP3TrackImpl;
@@ -57,13 +60,14 @@ public class AddMusic extends AppCompatActivity {
 
     static final int REQ_CODE_PICK_SOUNDFILE = 707;
     Uri audioFileUri;
+    Boolean CUSTOMMUSIC=false;
     String realpathtomusic;
     private DBHelper mydb ;
     TextView musicname;
 
 
         String appmusic[] = {"cool","energy","focus","groovy","happy","inspiration","idea"};
-        String appdir[] = {"cool.mp3","energy.mp3","focus.mp3","groovy.mp3","happy.mp3","inspiration.mp3","littleidea.mp3"};
+        String appdir[] = {"cool.aac","energy.aac","focus.aac","groovy.aac","happy.aac","inspiration.aac","littleidea.aac"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +87,7 @@ public class AddMusic extends AppCompatActivity {
             namecontent[0]= t[0];
         }
 
+
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         final String newfilename = namecontent[0]+"(audioEdit)"+"_"+timeStamp;
 
@@ -99,6 +104,9 @@ public class AddMusic extends AppCompatActivity {
                 startActivityForResult(Intent.createChooser(intent,"Select Audio"), REQ_CODE_PICK_SOUNDFILE);
             }
         });
+
+
+        Toast.makeText(AddMusic.this, "Long click songs to play", Toast.LENGTH_SHORT).show();
 
 
         //appmusic list view
@@ -126,10 +134,11 @@ public class AddMusic extends AppCompatActivity {
                         copyFile(is, out);
                     }
 
-
+                    CUSTOMMUSIC=false;
                     audioFileUri = Uri.parse(tdir);
                     realpathtomusic = audioFileUri.getPath();
                     musicname.setText(appmusic[position]);
+                    Log.d("custommusic",String.valueOf(CUSTOMMUSIC));
 
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -160,11 +169,17 @@ public class AddMusic extends AppCompatActivity {
                     }
                     Uri uritemp  = Uri.parse(tdir);
                    // realpathtomusic = audioFileUri.getPath();
+
+                    CUSTOMMUSIC = false;
+                    audioFileUri = Uri.parse(tdir);
+                    realpathtomusic = audioFileUri.getPath();
+                    musicname.setText(appmusic[position]);
+                    Log.d("custommusic", String.valueOf(CUSTOMMUSIC));
+
                     Intent intent = new Intent(Intent.ACTION_VIEW, uritemp);
                     intent.setDataAndType( Uri.parse("file:///"+Environment.getExternalStorageDirectory() + "/Logit/music-cache/"+appdir[position]), "audio/*");
                     startActivity(intent);
 
-                    startActivity(intent);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -197,11 +212,15 @@ public class AddMusic extends AppCompatActivity {
                                     }
                                 }
                             Movie result = new Movie();
+
+
+                            Log.d("custommusic",String.valueOf(CUSTOMMUSIC));
+                            if(CUSTOMMUSIC==true) {
                                 //removing headers
                                 Mp3File mp3file = new Mp3File(realpathtomusic);
                                 if (mp3file.hasId3v1Tag()) {
                                     mp3file.removeId3v1Tag();
-                                    Log.d("MP3agic","removeId3v1Tag");
+                                    Log.d("MP3agic", "removeId3v1Tag");
                                 }
                                 if (mp3file.hasId3v2Tag()) {
                                     mp3file.removeId3v2Tag();
@@ -209,18 +228,23 @@ public class AddMusic extends AppCompatActivity {
                                 }
                                 if (mp3file.hasCustomTag()) {
                                     mp3file.removeCustomTag();
-                                    Log.d("MP3agic","removeCustomTag");
+                                    Log.d("MP3agic", "removeCustomTag");
                                 }
 
-                            String tempdir = String.format(Environment.getExternalStorageDirectory() + "/Logit/temp.mp3");
-                            File file = new File(tempdir);
-                            if(file.exists())
-                                file.delete();
-                            mp3file.save(tempdir);
-                            MP3TrackImpl aacTrack = new MP3TrackImpl(new FileDataSourceImpl(tempdir));
-                            CroppedTrack croppedaacTrack = new CroppedTrack(aacTrack,0,(long)((lengthInSeconds*1000)/26));
-                            result.addTrack(croppedaacTrack);
-
+                                String tempdir = String.format(Environment.getExternalStorageDirectory() + "/Logit/temp.mp3");
+                                File file = new File(tempdir);
+                                if (file.exists())
+                                    file.delete();
+                                mp3file.save(tempdir);
+                                MP3TrackImpl aacTrack = new MP3TrackImpl(new FileDataSourceImpl(tempdir));
+                                CroppedTrack croppedaacTrack = new CroppedTrack(aacTrack, 0, (long) ((lengthInSeconds * 1000) / 26));
+                                result.addTrack(croppedaacTrack);
+                            }
+                            else{
+                                AACTrackImpl aacTrack = new AACTrackImpl(new FileDataSourceImpl(realpathtomusic));
+                                CroppedTrack croppedaacTrack = new CroppedTrack(aacTrack, 0, (long) ((lengthInSeconds * 1000) / 26));
+                                result.addTrack(croppedaacTrack);
+                            }
 
                             if (videoTracks.size() > 0) {
                                 result.addTrack(new AppendTrack(videoTracks.toArray(new Track[videoTracks.size()])));
@@ -238,10 +262,11 @@ public class AddMusic extends AppCompatActivity {
 
                             mydb.newcompletedvideo(newfilename, completefiledir);
 
-                            Toast.makeText(AddMusic.this, String.valueOf(lengthInSeconds)+"Music Added", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AddMusic.this, "Success -Please wait", Toast.LENGTH_SHORT).show();
 
                             Intent tint = new Intent(AddMusic.this,MainActivity.class);
                             startActivity(tint);
+                            finish();
 
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -291,7 +316,8 @@ public class AddMusic extends AppCompatActivity {
                 audioFileUri = data.getData();
                 realpathtomusic= getRealPathFromURI(AddMusic.this,audioFileUri);
                 musicname.setText("custom music");
-                Toast.makeText(AddMusic.this, "audio selected", Toast.LENGTH_SHORT).show();
+                CUSTOMMUSIC = true;
+                Toast.makeText(AddMusic.this, "custom audio selected", Toast.LENGTH_SHORT).show();
                 // Now you can use that Uri to get the file path, or upload it, ...
             }
         }

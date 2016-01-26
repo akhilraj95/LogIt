@@ -57,13 +57,10 @@ public class newlogform extends AppCompatActivity {
                         Toast.makeText(newlogform.this, "log created", Toast.LENGTH_LONG).show();
                         Intent temp = new Intent(getApplicationContext(),MainActivity.class);
                         startActivity(temp);
+                        finish();
                        // setResult(Activity.RESULT_OK,intent);
                        // finish();
 
-                    } else {
-
-                        //setResult(Activity.RESULT_CANCELED,intent);
-                        //finish();
                     }
                 }
                 else{

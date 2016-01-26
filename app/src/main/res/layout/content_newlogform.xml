@@ -29,7 +29,10 @@
     <EditText
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/editTextnewlogform" />
+        android:id="@+id/editTextnewlogform"
+        android:inputType="text"
+        android:imeOptions="actionDone"
+        android:maxLines="1"/>
 
     <TextView
         android:layout_width="fill_parent"
@@ -48,17 +51,18 @@
         android:id="@+id/spinnernewlogform"
         />
 
-    </LinearLayout>
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/startlog"
+            android:id="@+id/sumbitbuttonnewlogform"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="40dp"
+            android:background="#f65b5b"
+            android:textColor="@android:color/white"
+            android:textStyle="bold" />
 
-    <Button
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Start Log"
-        android:id="@+id/sumbitbuttonnewlogform"
-        android:layout_gravity="center_horizontal"
-        android:layout_alignParentEnd="false"
-        android:layout_alignParentBottom="true"
-        android:layout_alignWithParentIfMissing="false"
-        android:layout_alignParentRight="false" />
+    </LinearLayout>
 
 </RelativeLayout>

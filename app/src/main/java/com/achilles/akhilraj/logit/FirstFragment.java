@@ -7,15 +7,18 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
+import android.text.TextPaint;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,7 +36,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.targets.ActionItemTarget;
+import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
+
 import java.io.File;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 
@@ -43,6 +54,8 @@ public class FirstFragment extends Fragment {
     private CoordinatorLayout coordinatorLayout;
     ListView listview;
     View rootView;
+    SharedPreferences setpref;
+    SharedPreferences.Editor editor;
 
     public FirstFragment() {
         // Required empty public constructor
@@ -55,6 +68,22 @@ public class FirstFragment extends Fragment {
         listview = (ListView) rootView.findViewById(R.id.firstfragmentlistview1);
         mydb = new DBHelper(getContext());
 
+
+        setpref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        editor= setpref.edit();
+        if(setpref.getBoolean("tutaddlogbtn",true)) {
+            //tutorial
+
+            TextPaint t = new TextPaint();
+            t.setColor(Color.BLACK);
+            new ShowcaseView.Builder(getActivity())
+                    .setTarget(new ViewTarget(rootView.findViewById(R.id.addnewlogbtnfragment1)))
+                    .setContentTitle("Add a new log")
+                    .setContentText("Start a new log and take multiple short videos. Merge them in the end and share. The merged videos are available under the merge tab")
+                    .build();
+
+            editor.putBoolean("tutaddlogbtn",false).commit();
+        }
 
 
         Button button = (Button) rootView.findViewById(R.id.addnewlogbtnfragment1);
@@ -100,6 +129,7 @@ public class FirstFragment extends Fragment {
                                     Toast.makeText(getContext(), "Log deleted", Toast.LENGTH_SHORT).show();
                                     Intent tempintent = new Intent(getContext(), MainActivity.class);
                                     startActivity(tempintent);
+                                    getActivity().finish();
                                 }
                             }
                         })
@@ -110,7 +140,7 @@ public class FirstFragment extends Fragment {
                         });
                 android.app.AlertDialog alertDialog = dialogbuilder.create();
                 alertDialog.show();
-                return false;
+                return true;
             }
         });
 
@@ -170,7 +200,11 @@ public class FirstFragment extends Fragment {
                     return true;
                 }
 
-
+                if(view.getId() == R.id.logdate)
+                {
+                    ((TextView) view).setText(parseDateToddMMyyyy(cursor.getString(cursor.getColumnIndex(DBHelper.KEY_TIMESTAMP))));
+                    return true;
+                }
 
                 return false;
             }
@@ -179,6 +213,24 @@ public class FirstFragment extends Fragment {
         listview.setAdapter(mycursoradapter);
 
 
+    }
+
+    public String parseDateToddMMyyyy(String time) {
+        String inputPattern = "yyyy-MM-dd HH:mm:ss";
+        String outputPattern = "dd MMM  h:mm a";
+        SimpleDateFormat inputFormat = new SimpleDateFormat(inputPattern);
+        SimpleDateFormat outputFormat = new SimpleDateFormat(outputPattern);
+
+        Date date = null;
+        String str = null;
+
+        try {
+            date = inputFormat.parse(time);
+            str = outputFormat.format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return str;
     }
 
 

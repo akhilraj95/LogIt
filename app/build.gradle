@@ -26,5 +26,6 @@ dependencies {
     compile 'com.android.support:design:23.1.1'
     compile 'com.googlecode.mp4parser:isoparser:1.0.1'
     compile 'com.mpatric:mp3agic:0.8.3'
+    compile 'com.github.amlcurran.showcaseview:library:5.4.0'
 
 }

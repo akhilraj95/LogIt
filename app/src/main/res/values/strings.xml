@@ -8,4 +8,8 @@
     <string name="title_activity_indiv_log">IndivLog</string>
     <string name="title_activity_newlogform">newlogform</string>
     <string name="title_activity_add_music">AddMusic</string>
+    <string name="about">About</string>
+    <string name="share">Share</string>
+    <string name="guide">Guide</string>
+    <string name="startlog">Start Log</string>
 </resources>
