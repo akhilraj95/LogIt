@@ -20,7 +20,8 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -31,7 +32,8 @@
             android:name=".IndivLog"
             android:label="@string/title_activity_indiv_log"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.achilles.akhilraj.logit.MainActivity" />
@@ -40,7 +42,8 @@
             android:name=".newlogform"
             android:label="@string/title_activity_newlogform"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.achilles.akhilraj.logit.MainActivity" />
@@ -49,12 +52,14 @@
             android:name=".AddMusic"
             android:label="@string/title_activity_add_music"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.achilles.akhilraj.logit.MainActivity" />
         </activity>
-        <activity android:name=".settings" >
+        <activity android:name=".settings"
+            android:screenOrientation="portrait">
         </activity>
     </application>
 

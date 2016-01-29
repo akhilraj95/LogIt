@@ -57,6 +57,9 @@ public class FirstFragment extends Fragment {
     SharedPreferences setpref;
     SharedPreferences.Editor editor;
 
+    static final int ADD_LOG_REQ=777;
+    public static final int OPEN_LOG_REQ= 456;
+
     public FirstFragment() {
         // Required empty public constructor
     }
@@ -73,16 +76,31 @@ public class FirstFragment extends Fragment {
         editor= setpref.edit();
         if(setpref.getBoolean("tutaddlogbtn",true)) {
             //tutorial
+            android.app.AlertDialog.Builder dialogbuilder = new android.app.AlertDialog.Builder(getContext());
+            dialogbuilder.setTitle("Learn how to use the app?")
+                    .setMessage("Hello! Notice that there are two tabs in the home screen! \n\nLogs tab - the tab lets you organize your videos into logs \n Merged Tab - the tab lists the Movies (merged videos)\nWatch the video walkthrough for a better experiance.")
+                    .setPositiveButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            editor.putBoolean("tutaddlogbtn", false).commit();
 
-            TextPaint t = new TextPaint();
-            t.setColor(Color.BLACK);
-            new ShowcaseView.Builder(getActivity())
-                    .setTarget(new ViewTarget(rootView.findViewById(R.id.addnewlogbtnfragment1)))
-                    .setContentTitle("Add a new log")
-                    .setContentText("Start a new log and take multiple short videos. Merge them in the end and share. The merged videos are available under the merge tab")
-                    .build();
+                        }
+                    })
+                    .setNeutralButton("Skip for now", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
 
-            editor.putBoolean("tutaddlogbtn",false).commit();
+                        }
+                    })
+                    .setNegativeButton("Watch a Tutorial", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=H-30B0cqh88")));
+                            editor.putBoolean("tutaddlogbtn", false).commit();
+                        }
+                    });
+
+            android.app.AlertDialog alertDialog = dialogbuilder.create();
+            alertDialog.show();
+
         }
 
 
@@ -92,7 +110,7 @@ public class FirstFragment extends Fragment {
             public void onClick(View v) {
 
                 Intent intent = new Intent(getActivity(), newlogform.class);
-                startActivityForResult(intent, 777);
+                startActivityForResult(intent, ADD_LOG_REQ);
 
 
             }
@@ -127,9 +145,7 @@ public class FirstFragment extends Fragment {
                                 boolean deleted =mydb.delete(tempid);
                                 if (deleted) {
                                     Toast.makeText(getContext(), "Log deleted", Toast.LENGTH_SHORT).show();
-                                    Intent tempintent = new Intent(getContext(), MainActivity.class);
-                                    startActivity(tempintent);
-                                    getActivity().finish();
+                                    populateListView();
                                 }
                             }
                         })
@@ -148,13 +164,13 @@ public class FirstFragment extends Fragment {
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getContext(), IndivLog.class);
 
+                Intent intent = new Intent(getActivity(), IndivLog.class);
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
                 intent.putExtra("id",cursor.getString(0));
                 intent.putExtra("name", cursor.getString(1));
                 intent.putExtra("timestamp", cursor.getString(2));
-                startActivityForResult(intent, 123);
+                getActivity().startActivityForResult(intent, OPEN_LOG_REQ);
             }
         });
 
@@ -162,16 +178,18 @@ public class FirstFragment extends Fragment {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode==777)
+        if(requestCode==ADD_LOG_REQ)
         {
             if(resultCode==Activity.RESULT_OK)
             {
-                Snackbar.make(rootView," log created", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+
+                populateListView();
+                Snackbar.make(rootView," log created", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
 
             }
         }
+
 
     }
 

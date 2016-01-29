@@ -2,13 +2,8 @@ package com.achilles.akhilraj.logit;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.net.Uri;
-import android.preference.PreferenceManager;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TabLayout;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -17,12 +12,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.text.TextPaint;
 import android.view.Menu;
 import android.view.MenuItem;
-import com.github.amlcurran.showcaseview.ShowcaseView;
-import com.github.amlcurran.showcaseview.targets.ViewTarget;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -75,16 +66,18 @@ public class MainActivity extends AppCompatActivity {
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if(requestCode==777)
+        if(requestCode==FirstFragment.OPEN_LOG_REQ)
         {
-            if(resultCode== Activity.RESULT_OK)
+            if(resultCode==Activity.RESULT_OK)
             {
-                Snackbar.make(coordinatorLayout," log created", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                SecondFragment refreshfragment = (SecondFragment) getSupportFragmentManager().getFragments().get(1);
+                refreshfragment.populateListView();
+                mViewPager.setCurrentItem(1);
 
             }
         }
 
-
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -145,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
             }
             return null;
         }
+
     }
 
 

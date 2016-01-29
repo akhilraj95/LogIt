@@ -43,6 +43,7 @@ public class SecondFragment extends Fragment {
     ListView listview;
     View rootView;
     SimpleCursorAdapter mycursoradapter;
+    static final int ADD_MUSIC_REQUEST = 123;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -72,7 +73,7 @@ public class SecondFragment extends Fragment {
                                 Intent addmusicintent = new Intent(getContext(),AddMusic.class);
                                 addmusicintent.putExtra("file",temp);
                                 addmusicintent.putExtra("name",name);
-                                startActivity(addmusicintent);
+                                startActivityForResult(addmusicintent, ADD_MUSIC_REQUEST);
                             }
                         })
                         .setPositiveButton("Share", new DialogInterface.OnClickListener() {
@@ -89,9 +90,7 @@ public class SecondFragment extends Fragment {
                                 boolean deleted = temp.delete();
                                 if (deleted) {
                                     Toast.makeText(getContext(), "Video deleted", Toast.LENGTH_SHORT).show();
-                                    Intent tempintent = new Intent(getContext(), MainActivity.class);
-                                    startActivity(tempintent);
-                                    getActivity().finish();
+                                    populateListView();
                                 }
 
 
@@ -146,7 +145,14 @@ public class SecondFragment extends Fragment {
         return rootView;
     }
 
-    private void populateListView()
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == ADD_MUSIC_REQUEST) {
+            if (resultCode == Activity.RESULT_OK) {
+                populateListView();
+             }
+        }
+    }
+    public void populateListView()
     {
         Cursor cursor = mydb.getCompletedVideo();
 

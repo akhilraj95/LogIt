@@ -174,8 +174,13 @@ public class IndivLog extends AppCompatActivity {
                                     ml.concatvideos(IndivLog.this.id, log_name);
                                     Toast.makeText(IndivLog.this, "Please Wait", Toast.LENGTH_SHORT).show();
 
+                                    /*
                                     Intent returnintent = new Intent(IndivLog.this, MainActivity.class);
                                     startActivity(returnintent);
+                                    finish();
+                                    */
+                                    Intent returnIntent = getIntent();
+                                    setResult(Activity.RESULT_OK, returnIntent);
                                     finish();
                                 }
                             })

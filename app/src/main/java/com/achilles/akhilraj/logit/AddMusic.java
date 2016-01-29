@@ -264,8 +264,14 @@ public class AddMusic extends AppCompatActivity {
 
                             Toast.makeText(AddMusic.this, "Success -Please wait", Toast.LENGTH_SHORT).show();
 
+                            /*
                             Intent tint = new Intent(AddMusic.this,MainActivity.class);
                             startActivity(tint);
+                            finish();
+                            */
+
+                            Intent returnIntent = new Intent();
+                            setResult(Activity.RESULT_OK,returnIntent);
                             finish();
 
                         } catch (IOException e) {

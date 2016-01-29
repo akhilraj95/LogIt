@@ -54,13 +54,9 @@ public class newlogform extends AppCompatActivity {
                 if (name.length() > 0) {
                     if (mydb.insert(name,imgmap[position]))      // making entry in the DB
                     {
-                        Toast.makeText(newlogform.this, "log created", Toast.LENGTH_LONG).show();
-                        Intent temp = new Intent(getApplicationContext(),MainActivity.class);
-                        startActivity(temp);
+                        Intent returnIntent = new Intent();
+                        setResult(Activity.RESULT_OK,returnIntent);
                         finish();
-                       // setResult(Activity.RESULT_OK,intent);
-                       // finish();
-
                     }
                 }
                 else{
